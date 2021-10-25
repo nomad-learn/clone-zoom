@@ -10,17 +10,12 @@ html(lang="en")
     header 
       h1 Zoom
     main 
-      #welcome
-        form
-          input(placeholder="your nickname", required, type="text")
-          input(placeholder="room name", required, type="text")
-          button Enter Room
-        h3 open rooms
-        h4
-      #room
-        ul
-        form
-          input(placeholder="type your message", required, type="text")
-          button Send
+      #myStream
+        video#myFace(autoplay,playsinline, width="400" )
+        select#select
+          option(value="dsafjio13kdasd3n19idns10si", label="dafds")
+        div
+          button#camera 🙆‍♂️
+          button#audio 🔊
     script(src="/socket.io/socket.io.js")
     script(src="/public/js/app.js") 

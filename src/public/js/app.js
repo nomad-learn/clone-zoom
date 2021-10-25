@@ -1,64 +1,86 @@
-const socket = io();
+const video = document.getElementById("myFace");
+const audioBtn = document.getElementById("audio");
+const cameraBtn = document.getElementById("camera");
+const select = document.getElementById("select");
 
-const welcome = document.getElementById("welcome");
-const enterForm = welcome.querySelector("form");
-const room = document.getElementById("room");
-const messageForm = room.querySelector("form");
-const ul = room.querySelector("ul");
-const h4 = welcome.querySelector("h4");
+let myStream;
+let isMuted = false;
+let isCameraOff = false;
 
-room.hidden = true;
-
-let roomName;
-
-const addMessage = (text) => {
-  const li = document.createElement("li");
-  li.innerText = text;
-  ul.appendChild(li);
+const getCamera = async () => {
+  try {
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    const cameras = devices.filter((device) => device.kind === "videoinput");
+    const currentCamera = myStream.getVideoTracks()[0];
+    console.log(currentCamera);
+    cameras.forEach((camera) => {
+      const option = document.createElement("option");
+      option.value = camera.deviceId;
+      option.label = camera.label;
+      if (currentCamera.label === camera.lable) {
+        option.selected = true;
+      }
+      select.appendChild(option);
+    });
+  } catch (error) {
+    console.log(error);
+  }
 };
 
-const enterHandler = (_room) => {
-  welcome.hidden = true;
-  room.hidden = false;
+async function getMedia(deviceId) {
+  const initialConstrains = {
+    audio: true,
+    video: { facingMode: "user" },
+  };
+  const cameraConstrains = {
+    audio: true,
+    video: { deviceId },
+  };
+  try {
+    myStream = await navigator.mediaDevices.getUserMedia(
+      deviceId ? cameraConstrains : initialConstrains
+    );
+    if (!deviceId) {
+      await getCamera();
+    }
+    video.srcObject = myStream;
+  } catch (error) {
+    console.log(error);
+  }
+}
 
-  roomName = _room;
-  const h3 = document.createElement("h3");
-  h3.innerText = `Welcome ${_room}`;
-  room.prepend(h3);
+getMedia();
+
+const handleMuteClick = () => {
+  myStream
+    .getAudioTracks()
+    .forEach((track) => (track.enabled = !track.enabled));
+  if (isMuted) {
+    isMuted = false;
+    audioBtn.innerText = "🔊";
+  } else {
+    isMuted = true;
+    audioBtn.innerText = "🔈";
+  }
 };
 
-enterForm.addEventListener("submit", (e) => {
-  e.preventDefault();
-  const inputs = enterForm.querySelectorAll("input");
-  socket.emit(
-    "enter_room",
-    { nickname: inputs[0].value, room: inputs[1].value },
-    enterHandler
-  );
-  inputs.forEach((input) => (input.value = ""));
-});
+const handleCameraClick = () => {
+  myStream
+    .getVideoTracks()
+    .forEach((track) => (track.enabled = !track.enabled));
+  if (isCameraOff) {
+    isCameraOff = false;
+    cameraBtn.innerText = "🙆‍♂️";
+  } else {
+    isCameraOff = true;
+    cameraBtn.innerText = "🤦‍♂️";
+  }
+};
 
-messageForm.addEventListener("submit", (e) => {
-  e.preventDefault();
-  const input = messageForm.querySelector("input");
-  const value = input.value;
-  socket.emit("message", input.value, roomName, () => {
-    addMessage(`you : ${value}`);
-  });
-  input.value = "";
-});
+const handleCameraSwitch = async () => {
+  getMedia(select.value);
+};
 
-socket.on("welcome", (nickname, count) => {
-  addMessage(nickname + " joined" + ` (total user : ${count})`);
-});
-
-socket.on("bye", (nickname, count) => {
-  addMessage(nickname + " lefted" + ` (total user :${count})`);
-});
-
-socket.on("message", addMessage);
-
-socket.on("public", (rooms) => {
-  h4.innerText = `${rooms.join(",")}`;
-  welcome.appendChild(h4);
-});
+audioBtn.addEventListener("click", handleMuteClick);
+cameraBtn.addEventListener("click", handleCameraClick);
+select.addEventListener("input", handleCameraSwitch);
