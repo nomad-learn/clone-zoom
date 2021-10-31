@@ -5,17 +5,47 @@ html(lang="en")
     meta(http-equiv="X-UA-Compatible", content="IE=edge")
     meta(name="viewport", content="width=device-width, initial-scale=1.0")
     link(rel="stylesheet" href="https://unpkg.com/mvp.css")
+    style.
+      #notification{
+        position: fixed;
+        top: 10px;
+        left:0;
+        right:0;
+        margin: 0 auto;
+        width: fit-content;
+        padding: 1rem 1.3rem;
+        border-radius: 10px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: #D2FBA4;
+        color: black;
+        border: none;
+        transform: translateY(-200px);
+        transition: all 0.4s linear;
+        font-size: 1rem;
+        font-weight: 600;
+      }
+      #notification.show{
+        transform: translateY(0);
+      }
     title Document
   body
     header 
       h1 Zoom
-    main 
+    main
+      form#join
+        input(type="text" placeholder="enter room")
+        button(type="submit") Enter
       #myStream
+        h2#roomName
         video#myFace(autoplay,playsinline, width="400" )
         select#select
           option(value="dsafjio13kdasd3n19idns10si", label="dafds")
         div
           button#camera 🙆‍♂️
           button#audio 🔊
+        video#peerFace(autoplay,playsinline, width="400" )
+    #notification
     script(src="/socket.io/socket.io.js")
-    script(src="/public/js/app.js") 
+    script(src="/public/js/app.js" type="module") 
